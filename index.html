@@ -24,34 +24,30 @@
                     <button class="date-arrow">&gt;</button>
                 </div>
             <div class="progress-container">
-                    
                     <div class="macro-bar-group">
                         <div class="macro-label"><span>Protein</span> <span id="protein-text">0 / 120g</span></div>
                         <div class="macro-track"><div class="macro-fill protein-fill" id="protein-bar" style="width: 0%;"></div></div>
                     </div>
-                    
                     <div class="macro-bar-group">
                         <div class="macro-label"><span>Carbs</span> <span id="carbs-text">0 / 150g</span></div>
                         <div class="macro-track"><div class="macro-fill carbs-fill" id="carbs-bar" style="width: 0%;"></div></div>
                     </div>
-                    
                     <div class="macro-bar-group">
                         <div class="macro-label"><span>Fat</span> <span id="fat-text">0 / 50g</span></div>
                         <div class="macro-track"><div class="macro-fill fat-fill" id="fat-bar" style="width: 0%;"></div></div>
                     </div>
-
                 </div>
                 <h2>Log a Meal</h2>
                 <form id="macro-form">
                     <input type="text" placeholder="Food Name (Required)" required>
-                    <input type="number" placeholder="Servings (Required)" required step="0.1">
+                    <input type="number" placeholder="Servings (Required)" required step="any">
                     
                     <div class="macro-grid">
-                        <input type="number" placeholder="Calories">
-                        <input type="number" placeholder="Protein (g)">
-                        <input type="number" placeholder="Carbs (g)">
-                        <input type="number" placeholder="Fat (g)">
-                        <input type="number" placeholder="Sugar (g)">
+                        <input type="number" placeholder="Calories" step="any">
+                        <input type="number" placeholder="Protein (g)" step="any">
+                        <input type="number" placeholder="Carbs (g)" step="any">
+                        <input type="number" placeholder="Fat (g)" step="any">
+                        <input type="number" placeholder="Sugar (g)" step="any">
                     </div>
                     <button type="submit" class="submit-btn">Log It!</button>
                 </form>
