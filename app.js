@@ -76,14 +76,30 @@ document.addEventListener("DOMContentLoaded", () => {
         function formatMacroText(current, goal, unit) {
             const roundedCurrent = Math.round(current * 10) / 10; 
             const isOver = roundedCurrent > goal;
+            
             return `<span style="color: ${isOver ? '#ff6b6b' : 'inherit'}; font-weight: ${isOver ? 'bold' : 'normal'};">${roundedCurrent}</span> / ${goal}${unit}`;
         }
 
+        // Helper function for the "remaining" budget inside the bar
+        function calcLeft(current, goal, unit) {
+            const left = Math.round((goal - current) * 10) / 10;
+            if (left < 0) {
+                // If she goes over, show how much she went over in red
+                return `<span style="color: #ff6b6b;">${Math.abs(left)}${unit} over</span>`;
+            }
+            return `${left}${unit} left`;
+        }
         document.getElementById("calories-text").innerHTML = formatMacroText(totals.calories, goals.calories, ""); 
         document.getElementById("protein-text").innerHTML = formatMacroText(totals.protein, goals.protein, "g");
         document.getElementById("carbs-text").innerHTML = formatMacroText(totals.carbs, goals.carbs, "g");
         document.getElementById("fat-text").innerHTML = formatMacroText(totals.fat, goals.fat, "g");
 
+        // Update the remaining budget text inside the tracks
+        document.getElementById("cal-left").innerHTML = calcLeft(totals.calories, goals.calories, "");
+        document.getElementById("pro-left").innerHTML = calcLeft(totals.protein, goals.protein, "g");
+        document.getElementById("carb-left").innerHTML = calcLeft(totals.carbs, goals.carbs, "g");
+        document.getElementById("fat-left").innerHTML = calcLeft(totals.fat, goals.fat, "g");
+        
         document.getElementById("calories-bar").style.width = `${Math.min((totals.calories / goals.calories) * 100, 100)}%`; 
         document.getElementById("protein-bar").style.width = `${Math.min((totals.protein / goals.protein) * 100, 100)}%`;
         document.getElementById("carbs-bar").style.width = `${Math.min((totals.carbs / goals.carbs) * 100, 100)}%`;
