@@ -218,6 +218,7 @@ input {
 }
 
 /* Fun Pastel Colors for the Macros */
+.calories-fill { background-color: #CDB4DB; } /* Soft Purple */
 .protein-fill { background-color: #FF9A9E; } /* Soft Pink */
 .carbs-fill { background-color: #A1C4FD; } /* Soft Blue */
 .fat-fill { background-color: #FDD179; } /* Soft Yellow */
