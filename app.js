@@ -44,14 +44,16 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function renderProgress() {
         const selectedDate = dateInput.value;
-        let totals = { protein: 0, carbs: 0, fat: 0 };
+        // 1. Added calories to the totals tracker
+        let totals = { calories: 0, protein: 0, carbs: 0, fat: 0 }; 
         
         // Add up macros for the selected date
         allLogs.forEach(log => {
-            // Force both dates into standard strings before comparing
             const cleanLogDate = String(log.date).split('T')[0]; 
             
             if (cleanLogDate === selectedDate) {
+                // 2. Added calories to the math
+                totals.calories += Number(log.calories) || 0; 
                 totals.protein += Number(log.protein) || 0;
                 totals.carbs += Number(log.carbs) || 0;
                 totals.fat += Number(log.fat) || 0;
@@ -59,11 +61,15 @@ document.addEventListener("DOMContentLoaded", () => {
         });
 
         // Update the text labels
+        // 3. Added the calorie text update
+        document.getElementById("calories-text").innerText = `${totals.calories} / ${goals.calories}`; 
         document.getElementById("protein-text").innerText = `${totals.protein} / ${goals.protein}g`;
         document.getElementById("carbs-text").innerText = `${totals.carbs} / ${goals.carbs}g`;
         document.getElementById("fat-text").innerText = `${totals.fat} / ${goals.fat}g`;
 
         // Animate the progress bars
+        // 4. Added the calorie bar animation
+        document.getElementById("calories-bar").style.width = `${Math.min((totals.calories / goals.calories) * 100, 100)}%`; 
         document.getElementById("protein-bar").style.width = `${Math.min((totals.protein / goals.protein) * 100, 100)}%`;
         document.getElementById("carbs-bar").style.width = `${Math.min((totals.carbs / goals.carbs) * 100, 100)}%`;
         document.getElementById("fat-bar").style.width = `${Math.min((totals.fat / goals.fat) * 100, 100)}%`;
