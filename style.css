@@ -238,6 +238,7 @@ input {
     height: 14px;
     width: 100%;
     overflow: hidden;
+    position: relative;
 }
 
 .macro-fill {
@@ -434,4 +435,18 @@ input {
     align-items: center;
     line-height: 1;
     padding-bottom: 4px; /* <--- Manually nudges the symbol up */
+}
+
+/* --- MACROS REMAINING TEXT --- */
+.macro-remaining {
+    position: absolute;
+    right: 10px;          /* Pins it to the right edge */
+    top: 50%;
+    transform: translateY(-50%); /* Perfectly centers it vertically */
+    font-size: 11px;
+    color: #777;          /* Sleek, cool grey */
+    font-weight: 600;
+    z-index: 2;           /* Forces it to sit above the colored fill bar */
+    pointer-events: none; /* Prevents it from interfering with any taps */
+    text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.6); /* Subtle glow for contrast */
 }
