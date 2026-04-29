@@ -1,161 +1,60 @@
 const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzny5dfMKrktqj_Mh3KYFkS3IXrf-0QBeR2kChuddbUKseCmQIu8OJCg87GwBdz1crH/exec";
 
 document.addEventListener("DOMContentLoaded", () => {
-
+    
     // --- SECURITY CHECK ---
     const REQUIRED_KEY = "LizMacrosByMatt2017";
     const urlParams = new URLSearchParams(window.location.search);
     
     if (urlParams.get('key') !== REQUIRED_KEY) {
-        // If the key is missing or wrong, wipe the page completely
         document.body.innerHTML = "<h2 style='text-align:center; margin-top:50px; color:#aaa; font-family:sans-serif;'>Unauthorized Access</h2>";
-        return; // Stops all other JavaScript from running
+        return; 
     }
-    
+
     // 1. Set today's date automatically (Locked to Local Time)
     const dateInput = document.getElementById("log-date");
     const now = new Date();
-    // Build the YYYY-MM-DD string manually to avoid UTC shifts
     const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
     dateInput.value = todayStr;
 
-    // 2. Grab the form and the submit button
+    // 2. DOM Elements
     const form = document.getElementById("macro-form");
     const submitBtn = form.querySelector(".submit-btn");
+    const topTenList = document.querySelector(".top-ten-list");
+    const inputs = form.querySelectorAll("input");
+    const syncBanner = document.getElementById("sync-banner");
 
     // --- MASTER DATA HANDLER ---
     let allLogs = []; 
-    // Load Goals from local phone storage (or default if blank)
     let goals = JSON.parse(localStorage.getItem('lizMacroGoals')) || {
         calories: 2000, protein: 120, carbs: 150, fat: 50
     };
-    const topTenList = document.querySelector(".top-ten-list");
-    const inputs = form.querySelectorAll("input");
-
-    const syncBanner = document.getElementById("sync-banner"); // Grab the new banner
 
     // Fetch everything from the sheet
     async function fetchAppData() {
-        syncBanner.classList.remove("hidden"); // Show global banner
-        topTenList.innerHTML = "<li><span style='color: #888;'>Syncing data...</span></li>";
+        if (syncBanner) syncBanner.classList.remove("hidden");
+        if (topTenList) topTenList.innerHTML = "<li><span style='color: #888;'>Syncing data...</span></li>";
         
         try {
             const response = await fetch(WEB_APP_URL, { method: "GET", redirect: "follow" });
             allLogs = await response.json();
-            updateDashboard(); // Run the math
-            syncBanner.classList.add("hidden"); // Hide global banner on success
+            updateDashboard(); 
+            if (syncBanner) syncBanner.classList.add("hidden"); 
         } catch (error) {
             console.error("Data sync error:", error);
-            topTenList.innerHTML = "<li><span style='color: #ff6b6b;'>Sync failed.</span></li>";
-            syncBanner.innerText = "Sync Failed ❌"; // Alert the user
-            setTimeout(() => syncBanner.classList.add("hidden"), 3000);
+            if (topTenList) topTenList.innerHTML = "<li><span style='color: #ff6b6b;'>Sync failed.</span></li>";
+            if (syncBanner) {
+                syncBanner.innerText = "Sync Failed ❌";
+                setTimeout(() => {
+                    syncBanner.classList.add("hidden");
+                    syncBanner.innerText = "Syncing... ⏳"; // reset text for next time
+                }, 3000);
+            }
         }
     }
 
-    // Recalculate everything based on the selected date
     function updateDashboard() {
         renderTop10();
-
-        // --- HISTORY & DELETE LOGIC ---
-    function renderHistory() {
-        const container = document.getElementById("history-container");
-        container.innerHTML = "";
-        if (allLogs.length === 0) {
-            container.innerHTML = "<p style='text-align:center; color:#888;'>No meals logged yet!</p>";
-            return;
-        }
-
-        // 1. Group logs by Date
-        const groupedLogs = {};
-        allLogs.forEach(log => {
-            if (!groupedLogs[log.date]) groupedLogs[log.date] = [];
-            groupedLogs[log.date].push(log);
-        });
-
-        // 2. Sort dates newest to oldest, limit to 30 days
-        const sortedDates = Object.keys(groupedLogs).sort().reverse().slice(0, 30);
-
-        // 3. Build the UI
-        sortedDates.forEach(dateStr => {
-            // Format the date header (e.g., "Monday, January 1, 2026")
-            const dateObj = new Date(dateStr + "T12:00:00"); 
-            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-            const formattedDate = dateObj.toLocaleDateString('en-US', options);
-
-            const groupDiv = document.createElement("div");
-            groupDiv.className = "history-day-group";
-            groupDiv.innerHTML = `<div class="history-day-header">${formattedDate}</div>`;
-
-            const ul = document.createElement("ul");
-            ul.className = "history-list";
-
-            groupedLogs[dateStr].forEach(log => {
-                const li = document.createElement("li");
-                li.className = "history-item";
-
-                // [+] Button
-                const addBtn = document.createElement("button");
-                addBtn.className = "add-btn";
-                addBtn.innerText = "+";
-                addBtn.addEventListener("click", () => {
-                    inputs[0].value = log.name; inputs[1].value = log.servings;
-                    inputs[2].value = log.calories; inputs[3].value = log.protein;
-                    inputs[4].value = log.carbs; inputs[5].value = log.fat;
-                    inputs[6].value = log.sugar;
-                    window.scrollTo({ top: 0, behavior: 'smooth' });
-                });
-
-                // Info Box
-                const infoDiv = document.createElement("div");
-                infoDiv.className = "history-info";
-                infoDiv.innerHTML = `<strong>${log.name}</strong><small>${log.servings} servings | ${log.calories} kcal</small>`;
-
-                // [-] Button
-                const delBtn = document.createElement("button");
-                delBtn.className = "del-btn";
-                delBtn.innerText = "−";
-                delBtn.addEventListener("click", () => deleteLog(log.id, delBtn));
-
-                li.appendChild(addBtn);
-                li.appendChild(infoDiv);
-                li.appendChild(delBtn);
-                ul.appendChild(li);
-            });
-
-            groupDiv.appendChild(ul);
-            container.appendChild(groupDiv);
-        });
-    }
-
-    async function deleteLog(logId, btnElement) {
-        // UI feedback while deleting
-        btnElement.innerText = "⏳";
-        btnElement.disabled = true;
-
-        const payload = { action: "delete", id: logId };
-
-        try {
-            await fetch(WEB_APP_URL, {
-                method: "POST",
-                headers: { "Content-Type": "text/plain;charset=utf-8" },
-                body: JSON.stringify(payload),
-                redirect: "follow"
-            });
-            
-            // Remove the item instantly from the local array so UI is snappy
-            allLogs = allLogs.filter(log => log.id !== logId);
-            updateDashboard(); // Re-render everything
-            
-            // Re-sync with database in the background to ensure parity
-            fetchAppData(); 
-            
-        } catch (error) {
-            console.error("Failed to delete:", error);
-            btnElement.innerText = "−";
-            btnElement.disabled = false;
-            alert("Error deleting item. Please try again.");
-        }
-    }
         renderProgress();
         renderHistory();
     }
@@ -164,10 +63,8 @@ document.addEventListener("DOMContentLoaded", () => {
         const selectedDate = dateInput.value;
         let totals = { calories: 0, protein: 0, carbs: 0, fat: 0 }; 
         
-        // Add up macros for the selected date
         allLogs.forEach(log => {
             const cleanLogDate = String(log.date).split('T')[0]; 
-            
             if (cleanLogDate === selectedDate) {
                 totals.calories += Number(log.calories) || 0; 
                 totals.protein += Number(log.protein) || 0;
@@ -176,36 +73,17 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         });
 
-        // Helper function to format the text, round decimals, and turn red if over limit
         function formatMacroText(current, goal, unit) {
-            const roundedCurrent = Math.round(current * 10) / 10; // Rounds to 1 decimal place
+            const roundedCurrent = Math.round(current * 10) / 10; 
             const isOver = roundedCurrent > goal;
-            // Uses the same red as your delete button (#ff6b6b)
             return `<span style="color: ${isOver ? '#ff6b6b' : 'inherit'}; font-weight: ${isOver ? 'bold' : 'normal'};">${roundedCurrent}</span> / ${goal}${unit}`;
         }
 
-        // Update the text labels (Using innerHTML so the color styles apply)
         document.getElementById("calories-text").innerHTML = formatMacroText(totals.calories, goals.calories, ""); 
         document.getElementById("protein-text").innerHTML = formatMacroText(totals.protein, goals.protein, "g");
         document.getElementById("carbs-text").innerHTML = formatMacroText(totals.carbs, goals.carbs, "g");
         document.getElementById("fat-text").innerHTML = formatMacroText(totals.fat, goals.fat, "g");
 
-        // Animate the progress bars
-        document.getElementById("calories-bar").style.width = `${Math.min((totals.calories / goals.calories) * 100, 100)}%`; 
-        document.getElementById("protein-bar").style.width = `${Math.min((totals.protein / goals.protein) * 100, 100)}%`;
-        document.getElementById("carbs-bar").style.width = `${Math.min((totals.carbs / goals.carbs) * 100, 100)}%`;
-        document.getElementById("fat-bar").style.width = `${Math.min((totals.fat / goals.fat) * 100, 100)}%`;
-    }
-
-        // Update the text labels
-        // 3. Added the calorie text update
-        document.getElementById("calories-text").innerText = `${totals.calories} / ${goals.calories}`; 
-        document.getElementById("protein-text").innerText = `${totals.protein} / ${goals.protein}g`;
-        document.getElementById("carbs-text").innerText = `${totals.carbs} / ${goals.carbs}g`;
-        document.getElementById("fat-text").innerText = `${totals.fat} / ${goals.fat}g`;
-
-        // Animate the progress bars
-        // 4. Added the calorie bar animation
         document.getElementById("calories-bar").style.width = `${Math.min((totals.calories / goals.calories) * 100, 100)}%`; 
         document.getElementById("protein-bar").style.width = `${Math.min((totals.protein / goals.protein) * 100, 100)}%`;
         document.getElementById("carbs-bar").style.width = `${Math.min((totals.carbs / goals.carbs) * 100, 100)}%`;
@@ -213,12 +91,11 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function renderTop10() {
+        if (!topTenList) return;
         topTenList.innerHTML = "";
         if (allLogs.length === 0) return;
 
         const foodMap = {};
-        
-        // Count frequencies
         allLogs.forEach(log => {
             const cleanName = log.name.toString().trim();
             if (!cleanName) return;
@@ -236,12 +113,10 @@ document.addEventListener("DOMContentLoaded", () => {
             foodMap[cleanName].sugar = log.sugar;
         });
 
-        // Sort and slice top 10
         const top10 = Object.values(foodMap).sort((a, b) => b.count - a.count).slice(0, 10);
         
         top10.forEach(food => {
             const li = document.createElement("li");
-            
             const span = document.createElement("span");
             span.innerText = food.name;
             
@@ -249,12 +124,9 @@ document.addEventListener("DOMContentLoaded", () => {
             btn.className = "add-btn";
             btn.innerText = "+";
             btn.addEventListener("click", () => {
-                inputs[0].value = food.name;
-                inputs[1].value = food.servings;
-                inputs[2].value = food.calories;
-                inputs[3].value = food.protein;
-                inputs[4].value = food.carbs;
-                inputs[5].value = food.fat;
+                inputs[0].value = food.name; inputs[1].value = food.servings;
+                inputs[2].value = food.calories; inputs[3].value = food.protein;
+                inputs[4].value = food.carbs; inputs[5].value = food.fat;
                 inputs[6].value = food.sugar;
                 window.scrollTo({ top: 0, behavior: 'smooth' });
             });
@@ -265,126 +137,206 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // --- FORM LOGGING LOGIC ---
-    form.addEventListener("submit", async (e) => {
-        e.preventDefault(); 
-
-        const originalBtnText = submitBtn.innerText;
-        submitBtn.innerText = "Logging...";
-        submitBtn.disabled = true;
-
-        const formInputs = form.querySelectorAll("input");
+    // --- HISTORY & DELETE LOGIC ---
+    function renderHistory() {
+        const container = document.getElementById("history-container");
+        if (!container) return; 
+        container.innerHTML = "";
         
-        const payload = {
-            date: dateInput.value,
-            foodName: formInputs[0].value,
-            servings: formInputs[1].value,
-            calories: formInputs[2].value || 0,
-            protein: formInputs[3].value || 0,
-            carbs: formInputs[4].value || 0,
-            fat: formInputs[5].value || 0,
-            sugar: formInputs[6].value || 0
-        };
+        if (allLogs.length === 0) {
+            container.innerHTML = "<p style='text-align:center; color:#888;'>No meals logged yet!</p>";
+            return;
+        }
+
+        const groupedLogs = {};
+        allLogs.forEach(log => {
+            const cleanDate = String(log.date).split('T')[0];
+            if (!groupedLogs[cleanDate]) groupedLogs[cleanDate] = [];
+            groupedLogs[cleanDate].push(log);
+        });
+
+        const sortedDates = Object.keys(groupedLogs).sort().reverse().slice(0, 30);
+
+        sortedDates.forEach(dateStr => {
+            const dateObj = new Date(dateStr + "T12:00:00"); 
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            const formattedDate = dateObj.toLocaleDateString('en-US', options);
+
+            const groupDiv = document.createElement("div");
+            groupDiv.className = "history-day-group";
+            groupDiv.innerHTML = `<div class="history-day-header">${formattedDate}</div>`;
+
+            const ul = document.createElement("ul");
+            ul.className = "history-list";
+
+            groupedLogs[dateStr].forEach(log => {
+                const li = document.createElement("li");
+                li.className = "history-item";
+
+                const addBtn = document.createElement("button");
+                addBtn.className = "add-btn";
+                addBtn.innerText = "+";
+                addBtn.addEventListener("click", () => {
+                    inputs[0].value = log.name; inputs[1].value = log.servings;
+                    inputs[2].value = log.calories; inputs[3].value = log.protein;
+                    inputs[4].value = log.carbs; inputs[5].value = log.fat;
+                    inputs[6].value = log.sugar;
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                });
+
+                const infoDiv = document.createElement("div");
+                infoDiv.className = "history-info";
+                infoDiv.innerHTML = `<strong>${log.name}</strong><small>${log.servings} servings | ${log.calories} kcal</small>`;
+
+                const delBtn = document.createElement("button");
+                delBtn.className = "del-btn";
+                delBtn.innerText = "−";
+                delBtn.addEventListener("click", () => deleteLog(log.id, delBtn));
+
+                li.appendChild(addBtn);
+                li.appendChild(infoDiv);
+                li.appendChild(delBtn);
+                ul.appendChild(li);
+            });
+
+            groupDiv.appendChild(ul);
+            container.appendChild(groupDiv);
+        });
+    }
+
+    async function deleteLog(logId, btnElement) {
+        btnElement.innerText = "⏳";
+        btnElement.disabled = true;
+
+        const payload = { action: "delete", id: logId };
 
         try {
             await fetch(WEB_APP_URL, {
                 method: "POST",
                 headers: { "Content-Type": "text/plain;charset=utf-8" },
                 body: JSON.stringify(payload),
-                redirect: "follow" 
+                redirect: "follow"
             });
-
-            form.reset(); 
-            submitBtn.innerText = "Logged! ✅";
-            submitBtn.style.backgroundColor = "#7FB77E"; 
             
-            setTimeout(() => {
-                submitBtn.innerText = originalBtnText;
-                submitBtn.disabled = false;
-                submitBtn.style.backgroundColor = "var(--accent-peach)"; 
-            }, 2000);
-
-            // Resync data after logging
-            setTimeout(fetchAppData, 1500);
-
+            allLogs = allLogs.filter(log => log.id !== logId);
+            updateDashboard(); 
+            fetchAppData(); 
+            
         } catch (error) {
-            console.error("Error logging meal:", error);
-            submitBtn.innerText = "Error. Try Again.";
-            submitBtn.style.backgroundColor = "#ff6b6b"; 
-            
-            setTimeout(() => {
-                submitBtn.innerText = originalBtnText;
-                submitBtn.disabled = false;
-                submitBtn.style.backgroundColor = "var(--accent-peach)";
-            }, 3000);
+            console.error("Failed to delete:", error);
+            btnElement.innerText = "−";
+            btnElement.disabled = false;
+            alert("Error deleting item. Please try again.");
         }
-    });
+    }
+
+    // --- FORM LOGGING LOGIC ---
+    if (form) {
+        form.addEventListener("submit", async (e) => {
+            e.preventDefault(); 
+
+            const originalBtnText = submitBtn.innerText;
+            submitBtn.innerText = "Logging...";
+            submitBtn.disabled = true;
+            
+            const payload = {
+                date: dateInput.value,
+                foodName: inputs[0].value,
+                servings: inputs[1].value,
+                calories: inputs[2].value || 0,
+                protein: inputs[3].value || 0,
+                carbs: inputs[4].value || 0,
+                fat: inputs[5].value || 0,
+                sugar: inputs[6].value || 0
+            };
+
+            try {
+                await fetch(WEB_APP_URL, {
+                    method: "POST",
+                    headers: { "Content-Type": "text/plain;charset=utf-8" },
+                    body: JSON.stringify(payload),
+                    redirect: "follow" 
+                });
+
+                form.reset(); 
+                submitBtn.innerText = "Logged! ✅";
+                submitBtn.style.backgroundColor = "#7FB77E"; 
+                
+                setTimeout(() => {
+                    submitBtn.innerText = originalBtnText;
+                    submitBtn.disabled = false;
+                    submitBtn.style.backgroundColor = "var(--accent-peach)"; 
+                }, 2000);
+
+                setTimeout(fetchAppData, 1500);
+
+            } catch (error) {
+                console.error("Error logging meal:", error);
+                submitBtn.innerText = "Error. Try Again.";
+                submitBtn.style.backgroundColor = "#ff6b6b"; 
+                
+                setTimeout(() => {
+                    submitBtn.innerText = originalBtnText;
+                    submitBtn.disabled = false;
+                    submitBtn.style.backgroundColor = "var(--accent-peach)";
+                }, 3000);
+            }
+        });
+    }
 
     // --- DATE ARROW LOGIC ---
     const dateArrows = document.querySelectorAll(".date-arrow");
+    if (dateArrows.length >= 2) {
+        dateArrows[0].addEventListener("click", () => {
+            let currentDate = new Date(dateInput.value + "T12:00:00");
+            currentDate.setDate(currentDate.getDate() - 1);
+            dateInput.value = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(currentDate.getDate()).padStart(2, '0')}`;
+            updateDashboard(); 
+        });
 
-    // Left Arrow (-1 Day)
-    dateArrows[0].addEventListener("click", () => {
-        // Add noon to the string so JavaScript doesn't shift the day backward based on timezone
-        let currentDate = new Date(dateInput.value + "T12:00:00");
-        currentDate.setDate(currentDate.getDate() - 1);
-        
-        dateInput.value = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(currentDate.getDate()).padStart(2, '0')}`;
-        updateDashboard(); 
-    });
+        dateArrows[1].addEventListener("click", () => {
+            let currentDate = new Date(dateInput.value + "T12:00:00");
+            const nowLocal = new Date();
+            const localToday = `${nowLocal.getFullYear()}-${String(nowLocal.getMonth() + 1).padStart(2, '0')}-${String(nowLocal.getDate()).padStart(2, '0')}`;
+            
+            if (dateInput.value >= localToday) return; 
 
-    // Right Arrow (+1 Day)
-    dateArrows[1].addEventListener("click", () => {
-        let currentDate = new Date(dateInput.value + "T12:00:00");
-        
-        const nowLocal = new Date();
-        const localToday = `${nowLocal.getFullYear()}-${String(nowLocal.getMonth() + 1).padStart(2, '0')}-${String(nowLocal.getDate()).padStart(2, '0')}`;
-        
-        if (dateInput.value >= localToday) return; // Prevent future dates
+            currentDate.setDate(currentDate.getDate() + 1);
+            dateInput.value = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(currentDate.getDate()).padStart(2, '0')}`;
+            updateDashboard(); 
+        });
+    }
 
-        currentDate.setDate(currentDate.getDate() + 1);
-        dateInput.value = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(currentDate.getDate()).padStart(2, '0')}`;
-        updateDashboard(); 
-    });
+    if (dateInput) dateInput.addEventListener("change", updateDashboard);
 
-    // Listen for manual date changes
-    dateInput.addEventListener("change", updateDashboard);
-
-    // Initial load
-    fetchAppData();
-// --- SETTINGS LOGIC ---
+    // --- SETTINGS LOGIC ---
     const settingsForm = document.getElementById("settings-form");
-    
-    // Populate the form with current saved goals
-    document.getElementById("goal-calories").value = goals.calories;
-    document.getElementById("goal-protein").value = goals.protein;
-    document.getElementById("goal-carbs").value = goals.carbs;
-    document.getElementById("goal-fat").value = goals.fat;
+    if (settingsForm) {
+        document.getElementById("goal-calories").value = goals.calories;
+        document.getElementById("goal-protein").value = goals.protein;
+        document.getElementById("goal-carbs").value = goals.carbs;
+        document.getElementById("goal-fat").value = goals.fat;
 
-    settingsForm.addEventListener("submit", (e) => {
-        e.preventDefault();
-        
-        goals = {
-            calories: Number(document.getElementById("goal-calories").value) || 0,
-            protein: Number(document.getElementById("goal-protein").value) || 0,
-            carbs: Number(document.getElementById("goal-carbs").value) || 0,
-            fat: Number(document.getElementById("goal-fat").value) || 0
-        };
-
-        // Save to the phone's browser storage
-        localStorage.setItem('lizMacroGoals', JSON.stringify(goals));
-        
-        const saveBtn = settingsForm.querySelector("button");
-        saveBtn.innerText = "Saved! ✅";
-        saveBtn.style.backgroundColor = "#7FB77E";
-        
-        updateDashboard(); // Instantly update the progress bars
-        
-        setTimeout(() => {
-            saveBtn.innerText = "Save Goals";
-            saveBtn.style.backgroundColor = "var(--accent-peach)";
-        }, 2000);
-    });
+        settingsForm.addEventListener("submit", (e) => {
+            e.preventDefault();
+            goals = {
+                calories: Number(document.getElementById("goal-calories").value) || 0,
+                protein: Number(document.getElementById("goal-protein").value) || 0,
+                carbs: Number(document.getElementById("goal-carbs").value) || 0,
+                fat: Number(document.getElementById("goal-fat").value) || 0
+            };
+            localStorage.setItem('lizMacroGoals', JSON.stringify(goals));
+            
+            const saveBtn = settingsForm.querySelector("button");
+            saveBtn.innerText = "Saved! ✅";
+            saveBtn.style.backgroundColor = "#7FB77E";
+            updateDashboard(); 
+            setTimeout(() => {
+                saveBtn.innerText = "Save Goals";
+                saveBtn.style.backgroundColor = "var(--accent-peach)";
+            }, 2000);
+        });
+    }
 
     // --- MENU NAVIGATION LOGIC ---
     const hamburgerBtn = document.querySelector(".hamburger-menu");
@@ -395,31 +347,26 @@ document.addEventListener("DOMContentLoaded", () => {
     const pages = document.querySelectorAll(".page");
 
     function closeMenu() {
-        sidebar.classList.remove("open");
-        overlay.classList.remove("active");
+        if (sidebar) sidebar.classList.remove("open");
+        if (overlay) overlay.classList.remove("active");
     }
 
-    hamburgerBtn.addEventListener("click", () => {
+    if (hamburgerBtn) hamburgerBtn.addEventListener("click", () => {
         sidebar.classList.add("open");
         overlay.classList.add("active");
     });
 
-    closeBtn.addEventListener("click", closeMenu);
-    overlay.addEventListener("click", closeMenu);
+    if (closeBtn) closeBtn.addEventListener("click", closeMenu);
+    if (overlay) overlay.addEventListener("click", closeMenu);
 
     menuLinks.forEach(link => {
         link.addEventListener("click", (e) => {
             e.preventDefault();
             const targetId = e.target.getAttribute("data-target");
-            if(!targetId) return; // Ignores clicks on emojis inside the link
-
-            // Hide all pages, show the selected one
+            if(!targetId) return; 
             pages.forEach(p => p.classList.remove("active"));
             document.getElementById(targetId).classList.add("active");
-            
-            // Re-calculate streak if they opened the streak page
             if(targetId === "streaks-page") calculateStreak();
-            
             closeMenu();
         });
     });
@@ -430,49 +377,46 @@ document.addEventListener("DOMContentLoaded", () => {
     function calculateStreak() {
         if (allLogs.length === 0) return;
 
-        // Get unique dates logged, sorted newest to oldest
         const uniqueDates = [...new Set(allLogs.map(log => String(log.date).split('T')[0]))].sort().reverse();
         
         let currentStreak = 0;
-        const now = new Date();
-        const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+        const nowLocal = new Date();
+        const todayStr = `${nowLocal.getFullYear()}-${String(nowLocal.getMonth() + 1).padStart(2, '0')}-${String(nowLocal.getDate()).padStart(2, '0')}`;
         
         let yesterday = new Date();
         yesterday.setDate(yesterday.getDate() - 1);
         const yesterdayStr = `${yesterday.getFullYear()}-${String(yesterday.getMonth() + 1).padStart(2, '0')}-${String(yesterday.getDate()).padStart(2, '0')}`;
 
-        // The streak is alive if she logged TODAY or YESTERDAY. 
         let currentDateCheck = new Date(todayStr + "T12:00:00");
         
         if (uniqueDates[0] === todayStr) {
-            // Streak includes today
+            // Includes today
         } else if (uniqueDates[0] === yesterdayStr) {
-            // Streak is alive, she just hasn't logged today yet
             currentDateCheck = new Date(yesterdayStr + "T12:00:00");
         } else {
-            // She missed yesterday. Streak resets.
             renderStreak(0);
             return;
         }
 
-        // Count backward verifying no missed days
         for (let i = 0; i < uniqueDates.length; i++) {
             let logDate = new Date(uniqueDates[i] + "T12:00:00");
             if (logDate.getTime() === currentDateCheck.getTime()) {
                 currentStreak++;
-                currentDateCheck.setDate(currentDateCheck.getDate() - 1); // Walk back one day
+                currentDateCheck.setDate(currentDateCheck.getDate() - 1); 
             } else {
-                break; // Gap found!
+                break; 
             }
         }
-
         renderStreak(currentStreak);
     }
 
     function renderStreak(streak) {
-        document.getElementById("current-streak-count").innerText = streak;
+        const countSpan = document.getElementById("current-streak-count");
+        if (countSpan) countSpan.innerText = streak;
+        
         const timeline = document.getElementById("rewards-timeline");
-        timeline.innerHTML = ""; // Clear existing
+        if (!timeline) return;
+        timeline.innerHTML = ""; 
 
         milestones.forEach(day => {
             const isUnlocked = streak >= day;
@@ -499,4 +443,7 @@ document.addEventListener("DOMContentLoaded", () => {
             timeline.appendChild(milestoneDiv);
         });
     }
+
+    // Initial load
+    fetchAppData();
 });
