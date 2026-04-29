@@ -1,0 +1,185 @@
+/* Color Palette & Base Styles */
+:root {
+    --bg-color: #f4f9f4; /* Very light mint background */
+    --module-bg: #ffffff;
+    --text-main: #4a4a4a;
+    --accent-green: #7FB77E;
+    --accent-peach: #FFC090;
+    --shadow: 0 8px 20px rgba(0,0,0,0.06);
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+    background-color: var(--bg-color);
+    color: var(--text-main);
+}
+
+/* Header */
+.app-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: var(--module-bg);
+    padding: 15px 20px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.hamburger-menu {
+    background: none;
+    border: none;
+    font-size: 24px;
+    color: var(--accent-green);
+    cursor: pointer;
+}
+
+h1 {
+    font-size: 20px;
+    color: var(--accent-green);
+    letter-spacing: 1px;
+}
+
+.header-spacer {
+    width: 24px; /* Matches hamburger width to keep h1 centered */
+}
+
+/* Modules */
+.dashboard {
+    padding: 20px;
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
+.top-modules {
+    display: flex;
+    flex-direction: column; /* Stacked for mobile */
+    gap: 20px;
+}
+
+.floating-module {
+    background-color: var(--module-bg);
+    border-radius: 16px;
+    padding: 20px;
+    box-shadow: var(--shadow);
+}
+
+.floating-module h2 {
+    font-size: 18px;
+    margin-bottom: 15px;
+    color: var(--accent-green);
+    text-align: center;
+}
+
+/* Date Picker */
+.date-picker-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    background-color: var(--bg-color);
+    border-radius: 8px;
+    padding: 5px;
+}
+
+.date-arrow {
+    background: none;
+    border: none;
+    font-size: 18px;
+    font-weight: bold;
+    color: var(--accent-green);
+    cursor: pointer;
+    padding: 5px 15px;
+}
+
+.date-input {
+    border: none;
+    background: transparent;
+    font-size: 16px;
+    color: var(--text-main);
+    font-weight: bold;
+    outline: none;
+}
+
+/* Form Styles */
+form {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+input {
+    padding: 12px;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 14px;
+    background-color: #fafafa;
+}
+
+.macro-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+
+.submit-btn {
+    background-color: var(--accent-peach);
+    color: white;
+    border: none;
+    padding: 14px;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    margin-top: 10px;
+    transition: background-color 0.2s ease;
+}
+
+.submit-btn:hover {
+    background-color: #f5a971;
+}
+
+/* Top 10 List */
+.top-ten-list {
+    list-style: none;
+}
+
+.top-ten-list li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.add-btn {
+    background-color: var(--accent-green);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 28px;
+    height: 28px;
+    font-size: 18px;
+    cursor: pointer;
+    line-height: 28px;
+}
+
+/* Desktop Override */
+@media (min-width: 768px) {
+    .top-modules {
+        flex-direction: row; /* Side-by-side for desktop */
+    }
+    .logger-module {
+        flex: 2; /* Takes up more space */
+    }
+    .top-ten-module {
+        flex: 1; /* Takes up less space */
+    }
+}
