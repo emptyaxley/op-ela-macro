@@ -33,6 +33,13 @@ body {
     z-index: 100;
 }
 
+.header-logo {
+    max-height: 40px; /* Keeps the logo cleanly within the sticky header */
+    width: auto;      /* Prevents stretching */
+    display: block;
+    margin: 0 auto;   /* Centers it between the menu and the spacer */
+}
+
 .hamburger-menu {
     background: none;
     border: none;
