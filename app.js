@@ -184,7 +184,30 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Listen for date changes so the graph updates instantly
     document.getElementById("log-date").addEventListener("change", updateDashboard);
+    // --- DATE ARROW LOGIC ---
+    const dateArrows = document.querySelectorAll(".date-arrow");
+    const dateInput = document.getElementById("log-date");
 
+    // Left Arrow (-1 Day)
+    dateArrows[0].addEventListener("click", () => {
+        let currentDate = new Date(dateInput.value);
+        currentDate.setDate(currentDate.getDate() - 1);
+        dateInput.value = currentDate.toISOString().split('T')[0];
+        updateDashboard(); // Recalculate graphs for the new date
+    });
+
+    // Right Arrow (+1 Day)
+    dateArrows[1].addEventListener("click", () => {
+        let currentDate = new Date(dateInput.value);
+        
+        // Prevent going into the future
+        const today = new Date().toISOString().split('T')[0];
+        if (dateInput.value >= today) return; 
+
+        currentDate.setDate(currentDate.getDate() + 1);
+        dateInput.value = currentDate.toISOString().split('T')[0];
+        updateDashboard(); // Recalculate graphs for the new date
+    });
     // Initial load
     fetchAppData();
     
