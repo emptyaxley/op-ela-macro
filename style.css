@@ -426,3 +426,11 @@ input {
 
 .del-btn:hover { background-color: #fa5252; }
 .del-btn:disabled { background-color: #ccc; cursor: not-allowed; }
+
+/* --- PERFECT BUTTON CENTERING --- */
+.add-btn, .del-btn {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    line-height: 1; /* Overrides any default font spacing */
+}
