@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Liz's Macros</title>
-    <meta name="robots" content="noindex, nofollow">
     <link rel="stylesheet" href="style.css">
+    <meta name="robots" content="noindex, nofollow">
 </head>
 <body>
 
@@ -14,7 +14,9 @@
         <h1>Liz's Macros</h1>
         <div class="header-spacer"></div>
     </header>
+
     <div id="sync-banner" class="sync-banner hidden">Syncing... ⏳</div>
+
     <div id="menu-overlay" class="menu-overlay"></div>
     <nav id="sidebar" class="sidebar">
         <button id="close-menu" class="close-btn">&times;</button>
@@ -26,6 +28,7 @@
     </nav>
 
     <main id="dashboard-page" class="dashboard page active">
+        
         <div class="top-modules">
             
             <section class="floating-module logger-module">
@@ -34,11 +37,7 @@
                     <input type="date" id="log-date" class="date-input">
                     <button class="date-arrow">&gt;</button>
                 </div>
-                <section class="floating-module history-module" style="margin-top: 20px;">
-                    <h2>30-Day Log History</h2>
-                    <div id="history-container">
-                </div>
-                </section>
+
                 <div class="progress-container">
                     <div class="macro-bar-group">
                         <div class="macro-label"><span>Calories</span> <span id="calories-text">0 / 2000</span></div>
@@ -79,7 +78,12 @@
                     </ul>
             </section>
 
-        </div>
+        </div> <section class="floating-module history-module" style="margin-top: 20px;">
+            <h2>30-Day Log History</h2>
+            <div id="history-container">
+                </div>
+        </section>
+
     </main>
 
     <main id="streaks-page" class="dashboard page">
