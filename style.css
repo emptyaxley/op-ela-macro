@@ -183,3 +183,41 @@ input {
         flex: 1; /* Takes up less space */
     }
 }
+/* Progress Bars */
+.progress-container {
+    margin-bottom: 25px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.macro-bar-group {
+    margin-bottom: 12px;
+}
+
+.macro-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 14px;
+    margin-bottom: 6px;
+    font-weight: 600;
+    color: var(--text-main);
+}
+
+.macro-track {
+    background-color: #e9ecef;
+    border-radius: 10px;
+    height: 14px;
+    width: 100%;
+    overflow: hidden;
+}
+
+.macro-fill {
+    height: 100%;
+    border-radius: 10px;
+    transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Fun Pastel Colors for the Macros */
+.protein-fill { background-color: #FF9A9E; } /* Soft Pink */
+.carbs-fill { background-color: #A1C4FD; } /* Soft Blue */
+.fat-fill { background-color: #FDD179; } /* Soft Yellow */
