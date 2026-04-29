@@ -221,3 +221,115 @@ input {
 .protein-fill { background-color: #FF9A9E; } /* Soft Pink */
 .carbs-fill { background-color: #A1C4FD; } /* Soft Blue */
 .fat-fill { background-color: #FDD179; } /* Soft Yellow */
+
+/* --- SPA PAGE LOGIC --- */
+.page { display: none; }
+.page.active { display: block; }
+.hidden { display: none !important; }
+
+/* --- SIDEBAR MENU --- */
+.sidebar {
+    position: fixed;
+    top: 0;
+    left: -280px; /* Hidden off screen */
+    width: 250px;
+    height: 100vh;
+    background-color: var(--module-bg);
+    box-shadow: 2px 0 15px rgba(0,0,0,0.1);
+    z-index: 1000;
+    transition: left 0.3s ease;
+    padding: 20px;
+}
+
+.sidebar.open { left: 0; }
+
+.menu-overlay {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.4);
+    z-index: 999;
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.3s ease;
+}
+
+.menu-overlay.active {
+    opacity: 1; pointer-events: auto;
+}
+
+.close-btn {
+    font-size: 30px;
+    color: var(--accent-peach);
+    background: none; border: none;
+    cursor: pointer;
+    margin-bottom: 20px;
+}
+
+.menu-links { list-style: none; }
+.menu-links li { margin-bottom: 20px; }
+.menu-links a {
+    text-decoration: none;
+    font-size: 18px;
+    color: var(--text-main);
+    font-weight: bold;
+    display: block;
+    padding: 10px;
+    border-radius: 8px;
+    transition: background 0.2s;
+}
+.menu-links a:hover { background-color: var(--bg-color); color: var(--accent-green); }
+
+/* --- STREAKS PAGE --- */
+.text-center { text-align: center; }
+.streak-display { margin: 20px 0; }
+.streak-display span {
+    font-size: 60px;
+    font-weight: 800;
+    color: var(--accent-peach);
+    text-shadow: 2px 2px 0px rgba(255, 192, 144, 0.3);
+}
+
+/* Rewards Timeline */
+.rewards-timeline {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.milestone {
+    display: flex;
+    align-items: center;
+    background: #f9f9f9;
+    padding: 15px;
+    border-radius: 12px;
+    opacity: 0.6; /* Grayed out by default */
+    filter: grayscale(100%);
+    transition: all 0.3s ease;
+}
+
+.milestone.unlocked {
+    opacity: 1;
+    filter: grayscale(0%);
+    background: #fff;
+    box-shadow: 0 4px 10px rgba(127, 183, 126, 0.2);
+    border: 2px solid var(--accent-green);
+}
+
+.milestone-day {
+    font-size: 24px;
+    font-weight: bold;
+    color: var(--accent-green);
+    width: 60px;
+}
+
+.milestone-text { flex: 1; font-weight: 600; }
+.milestone-icon { font-size: 24px; }
+
+/* --- SETTINGS PAGE --- */
+.settings-module label {
+    font-weight: 600;
+    font-size: 14px;
+    margin-top: 15px;
+    display: block;
+    color: var(--accent-green);
+}
