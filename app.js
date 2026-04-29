@@ -39,7 +39,109 @@ document.addEventListener("DOMContentLoaded", () => {
     // Recalculate everything based on the selected date
     function updateDashboard() {
         renderTop10();
+
+        // --- HISTORY & DELETE LOGIC ---
+    function renderHistory() {
+        const container = document.getElementById("history-container");
+        container.innerHTML = "";
+        if (allLogs.length === 0) {
+            container.innerHTML = "<p style='text-align:center; color:#888;'>No meals logged yet!</p>";
+            return;
+        }
+
+        // 1. Group logs by Date
+        const groupedLogs = {};
+        allLogs.forEach(log => {
+            if (!groupedLogs[log.date]) groupedLogs[log.date] = [];
+            groupedLogs[log.date].push(log);
+        });
+
+        // 2. Sort dates newest to oldest, limit to 30 days
+        const sortedDates = Object.keys(groupedLogs).sort().reverse().slice(0, 30);
+
+        // 3. Build the UI
+        sortedDates.forEach(dateStr => {
+            // Format the date header (e.g., "Monday, January 1, 2026")
+            const dateObj = new Date(dateStr + "T12:00:00"); 
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            const formattedDate = dateObj.toLocaleDateString('en-US', options);
+
+            const groupDiv = document.createElement("div");
+            groupDiv.className = "history-day-group";
+            groupDiv.innerHTML = `<div class="history-day-header">${formattedDate}</div>`;
+
+            const ul = document.createElement("ul");
+            ul.className = "history-list";
+
+            groupedLogs[dateStr].forEach(log => {
+                const li = document.createElement("li");
+                li.className = "history-item";
+
+                // [+] Button
+                const addBtn = document.createElement("button");
+                addBtn.className = "add-btn";
+                addBtn.innerText = "+";
+                addBtn.addEventListener("click", () => {
+                    inputs[0].value = log.name; inputs[1].value = log.servings;
+                    inputs[2].value = log.calories; inputs[3].value = log.protein;
+                    inputs[4].value = log.carbs; inputs[5].value = log.fat;
+                    inputs[6].value = log.sugar;
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                });
+
+                // Info Box
+                const infoDiv = document.createElement("div");
+                infoDiv.className = "history-info";
+                infoDiv.innerHTML = `<strong>${log.name}</strong><small>${log.servings} servings | ${log.calories} kcal</small>`;
+
+                // [-] Button
+                const delBtn = document.createElement("button");
+                delBtn.className = "del-btn";
+                delBtn.innerText = "−";
+                delBtn.addEventListener("click", () => deleteLog(log.id, delBtn));
+
+                li.appendChild(addBtn);
+                li.appendChild(infoDiv);
+                li.appendChild(delBtn);
+                ul.appendChild(li);
+            });
+
+            groupDiv.appendChild(ul);
+            container.appendChild(groupDiv);
+        });
+    }
+
+    async function deleteLog(logId, btnElement) {
+        // UI feedback while deleting
+        btnElement.innerText = "⏳";
+        btnElement.disabled = true;
+
+        const payload = { action: "delete", id: logId };
+
+        try {
+            await fetch(WEB_APP_URL, {
+                method: "POST",
+                headers: { "Content-Type": "text/plain;charset=utf-8" },
+                body: JSON.stringify(payload),
+                redirect: "follow"
+            });
+            
+            // Remove the item instantly from the local array so UI is snappy
+            allLogs = allLogs.filter(log => log.id !== logId);
+            updateDashboard(); // Re-render everything
+            
+            // Re-sync with database in the background to ensure parity
+            fetchAppData(); 
+            
+        } catch (error) {
+            console.error("Failed to delete:", error);
+            btnElement.innerText = "−";
+            btnElement.disabled = false;
+            alert("Error deleting item. Please try again.");
+        }
+    }
         renderProgress();
+        renderHistory();
     }
 
     function renderProgress() {
