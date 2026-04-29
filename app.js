@@ -72,64 +72,127 @@ document.addEventListener("DOMContentLoaded", () => {
             }, 3000);
         }
     });
-    // --- TOP 10 LOGIC ---
+   // --- MASTER DATA HANDLER ---
     
-    const topTenList = document.querySelector(".top-ten-list");
-    const inputs = form.querySelectorAll("input"); // Grab all inputs again
+    let allLogs = []; // Stores the whole database locally for instant math
+    
+    // Placeholder goals until we build the Settings page
+    const goals = { protein: 120, carbs: 150, fat: 50 }; 
 
-    // Function to fetch and display the top 10
-    async function loadTop10() {
-        topTenList.innerHTML = "<li><span style='color: #888;'>Loading favorites...</span></li>";
+    const topTenList = document.querySelector(".top-ten-list");
+    const inputs = form.querySelectorAll("input");
+
+    // Fetch everything from the sheet
+    async function fetchAppData() {
+        topTenList.innerHTML = "<li><span style='color: #888;'>Syncing data...</span></li>";
         
         try {
-            // Fetch the data from your Apps Script doGet function
-            const response = await fetch(WEB_APP_URL);
-            const data = await response.json();
+            const response = await fetch(WEB_APP_URL, { method: "GET", redirect: "follow" });
+            allLogs = await response.json();
             
-            topTenList.innerHTML = ""; // Clear the "Loading" text
-            
-            // If the sheet is empty
-            if (data.length === 0) {
-                topTenList.innerHTML = "<li><span style='color: #888;'>No foods logged yet!</span></li>";
-                return;
-            }
-            
-            // Build the list items
-            data.forEach(food => {
-                const li = document.createElement("li");
-                
-                const span = document.createElement("span");
-                span.innerText = food.name;
-                
-                const btn = document.createElement("button");
-                btn.className = "add-btn";
-                btn.innerText = "+";
-                
-                // When the [+] button is clicked...
-                btn.addEventListener("click", () => {
-                    inputs[0].value = food.name;
-                    inputs[1].value = food.servings;
-                    inputs[2].value = food.calories;
-                    inputs[3].value = food.protein;
-                    inputs[4].value = food.carbs;
-                    inputs[5].value = food.fat;
-                    inputs[6].value = food.sugar;
-                    
-                    // Smooth scroll back to the top of the form (great for mobile)
-                    window.scrollTo({ top: 0, behavior: 'smooth' });
-                });
-                
-                li.appendChild(span);
-                li.appendChild(btn);
-                topTenList.appendChild(li);
-            });
+            updateDashboard(); // Run the math
             
         } catch (error) {
-            console.error("Error loading top 10:", error);
-            topTenList.innerHTML = "<li><span style='color: #ff6b6b;'>Error loading list.</span></li>";
+            console.error("Data sync error:", error);
+            topTenList.innerHTML = "<li><span style='color: #ff6b6b;'>Sync failed.</span></li>";
         }
     }
 
+    // Recalculate everything based on the selected date
+    function updateDashboard() {
+        renderTop10();
+        renderProgress();
+    }
+
+    function renderProgress() {
+        const selectedDate = document.getElementById("log-date").value;
+        let totals = { protein: 0, carbs: 0, fat: 0 };
+        
+        // Add up macros for the selected date
+        allLogs.forEach(log => {
+            if (log.date === selectedDate) {
+                totals.protein += Number(log.protein) || 0;
+                totals.carbs += Number(log.carbs) || 0;
+                totals.fat += Number(log.fat) || 0;
+            }
+        });
+
+        // Update the text labels
+        document.getElementById("protein-text").innerText = `${totals.protein} / ${goals.protein}g`;
+        document.getElementById("carbs-text").innerText = `${totals.carbs} / ${goals.carbs}g`;
+        document.getElementById("fat-text").innerText = `${totals.fat} / ${goals.fat}g`;
+
+        // Animate the progress bars (caps at 100% so it doesn't break the UI if she goes over)
+        document.getElementById("protein-bar").style.width = `${Math.min((totals.protein / goals.protein) * 100, 100)}%`;
+        document.getElementById("carbs-bar").style.width = `${Math.min((totals.carbs / goals.carbs) * 100, 100)}%`;
+        document.getElementById("fat-bar").style.width = `${Math.min((totals.fat / goals.fat) * 100, 100)}%`;
+    }
+
+    function renderTop10() {
+        topTenList.innerHTML = "";
+        if (allLogs.length === 0) return;
+
+        const foodMap = {};
+        
+        // Count frequencies
+        allLogs.forEach(log => {
+            const cleanName = log.name.toString().trim();
+            if (!cleanName) return;
+            
+            if (!foodMap[cleanName]) {
+                foodMap[cleanName] = { ...log, count: 0 };
+            }
+            foodMap[cleanName].count += 1;
+            
+            // Always keep the most recent macro values
+            foodMap[cleanName].servings = log.servings;
+            foodMap[cleanName].calories = log.calories;
+            foodMap[cleanName].protein = log.protein;
+            foodMap[cleanName].carbs = log.carbs;
+            foodMap[cleanName].fat = log.fat;
+            foodMap[cleanName].sugar = log.sugar;
+        });
+
+        // Sort and slice top 10
+        const top10 = Object.values(foodMap).sort((a, b) => b.count - a.count).slice(0, 10);
+        
+        top10.forEach(food => {
+            const li = document.createElement("li");
+            
+            const span = document.createElement("span");
+            span.innerText = food.name;
+            
+            const btn = document.createElement("button");
+            btn.className = "add-btn";
+            btn.innerText = "+";
+            btn.addEventListener("click", () => {
+                inputs[0].value = food.name;
+                inputs[1].value = food.servings;
+                inputs[2].value = food.calories;
+                inputs[3].value = food.protein;
+                inputs[4].value = food.carbs;
+                inputs[5].value = food.fat;
+                inputs[6].value = food.sugar;
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            });
+            
+            li.appendChild(span);
+            li.appendChild(btn);
+            topTenList.appendChild(li);
+        });
+    }
+
+    // Listen for date changes so the graph updates instantly
+    document.getElementById("log-date").addEventListener("change", updateDashboard);
+
+    // Initial load
+    fetchAppData();
+    
+    // Refresh data after a new meal is logged
+    form.addEventListener("submit", () => {
+        setTimeout(fetchAppData, 2000); 
+    });
+    
     // Run the function as soon as the page loads
     loadTop10();
     
