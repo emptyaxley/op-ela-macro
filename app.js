@@ -162,7 +162,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function renderProgress() {
         const selectedDate = dateInput.value;
-        // 1. Added calories to the totals tracker
         let totals = { calories: 0, protein: 0, carbs: 0, fat: 0 }; 
         
         // Add up macros for the selected date
@@ -170,13 +169,33 @@ document.addEventListener("DOMContentLoaded", () => {
             const cleanLogDate = String(log.date).split('T')[0]; 
             
             if (cleanLogDate === selectedDate) {
-                // 2. Added calories to the math
                 totals.calories += Number(log.calories) || 0; 
                 totals.protein += Number(log.protein) || 0;
                 totals.carbs += Number(log.carbs) || 0;
                 totals.fat += Number(log.fat) || 0;
             }
         });
+
+        // Helper function to format the text, round decimals, and turn red if over limit
+        function formatMacroText(current, goal, unit) {
+            const roundedCurrent = Math.round(current * 10) / 10; // Rounds to 1 decimal place
+            const isOver = roundedCurrent > goal;
+            // Uses the same red as your delete button (#ff6b6b)
+            return `<span style="color: ${isOver ? '#ff6b6b' : 'inherit'}; font-weight: ${isOver ? 'bold' : 'normal'};">${roundedCurrent}</span> / ${goal}${unit}`;
+        }
+
+        // Update the text labels (Using innerHTML so the color styles apply)
+        document.getElementById("calories-text").innerHTML = formatMacroText(totals.calories, goals.calories, ""); 
+        document.getElementById("protein-text").innerHTML = formatMacroText(totals.protein, goals.protein, "g");
+        document.getElementById("carbs-text").innerHTML = formatMacroText(totals.carbs, goals.carbs, "g");
+        document.getElementById("fat-text").innerHTML = formatMacroText(totals.fat, goals.fat, "g");
+
+        // Animate the progress bars
+        document.getElementById("calories-bar").style.width = `${Math.min((totals.calories / goals.calories) * 100, 100)}%`; 
+        document.getElementById("protein-bar").style.width = `${Math.min((totals.protein / goals.protein) * 100, 100)}%`;
+        document.getElementById("carbs-bar").style.width = `${Math.min((totals.carbs / goals.carbs) * 100, 100)}%`;
+        document.getElementById("fat-bar").style.width = `${Math.min((totals.fat / goals.fat) * 100, 100)}%`;
+    }
 
         // Update the text labels
         // 3. Added the calorie text update
