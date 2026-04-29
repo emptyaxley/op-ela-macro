@@ -23,7 +23,24 @@
                     <input type="date" id="log-date" class="date-input">
                     <button class="date-arrow">&gt;</button>
                 </div>
-                
+            <div class="progress-container">
+                    
+                    <div class="macro-bar-group">
+                        <div class="macro-label"><span>Protein</span> <span id="protein-text">0 / 120g</span></div>
+                        <div class="macro-track"><div class="macro-fill protein-fill" id="protein-bar" style="width: 0%;"></div></div>
+                    </div>
+                    
+                    <div class="macro-bar-group">
+                        <div class="macro-label"><span>Carbs</span> <span id="carbs-text">0 / 150g</span></div>
+                        <div class="macro-track"><div class="macro-fill carbs-fill" id="carbs-bar" style="width: 0%;"></div></div>
+                    </div>
+                    
+                    <div class="macro-bar-group">
+                        <div class="macro-label"><span>Fat</span> <span id="fat-text">0 / 50g</span></div>
+                        <div class="macro-track"><div class="macro-fill fat-fill" id="fat-bar" style="width: 0%;"></div></div>
+                    </div>
+
+                </div>
                 <h2>Log a Meal</h2>
                 <form id="macro-form">
                     <input type="text" placeholder="Food Name (Required)" required>
