@@ -51,6 +51,28 @@ h1 {
     width: 24px; /* Matches hamburger width to keep h1 centered */
 }
 
+/* --- GLOBAL SYNC BANNER --- */
+.sync-banner {
+    position: fixed;
+    top: 65px; /* Floats just below the sticky header */
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: var(--accent-peach);
+    color: white;
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: bold;
+    z-index: 999;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+    transition: opacity 0.3s ease;
+}
+
+.sync-banner.hidden {
+    opacity: 0;
+    pointer-events: none;
+}
+
 /* Modules */
 .dashboard {
     padding: 20px;
