@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Liz's Macros</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <header class="app-header">
+        <button class="hamburger-menu">☰</button>
+        <h1>Liz's Macros</h1>
+        <div class="header-spacer"></div> </header>
+
+    <main class="dashboard">
+        
+        <div class="top-modules">
+            
+            <section class="floating-module logger-module">
+                <div class="date-picker-container">
+                    <button class="date-arrow">&lt;</button>
+                    <input type="date" id="log-date" class="date-input">
+                    <button class="date-arrow">&gt;</button>
+                </div>
+                
+                <h2>Log a Meal</h2>
+                <form id="macro-form">
+                    <input type="text" placeholder="Food Name (Required)" required>
+                    <input type="number" placeholder="Servings (Required)" required step="0.1">
+                    
+                    <div class="macro-grid">
+                        <input type="number" placeholder="Calories">
+                        <input type="number" placeholder="Protein (g)">
+                        <input type="number" placeholder="Carbs (g)">
+                        <input type="number" placeholder="Fat (g)">
+                        <input type="number" placeholder="Sugar (g)">
+                    </div>
+                    <button type="submit" class="submit-btn">Log It!</button>
+                </form>
+            </section>
+
+            <section class="floating-module top-ten-module">
+                <h2>Top Logged Foods</h2>
+                <ul class="top-ten-list">
+                    <li><span>Grilled Chicken Bowl</span> <button class="add-btn">+</button></li>
+                    <li><span>Greek Yogurt & Berries</span> <button class="add-btn">+</button></li>
+                    <li><span>Protein Shake</span> <button class="add-btn">+</button></li>
+                </ul>
+            </section>
+
+        </div>
+    </main>
+
+</body>
+</html>
