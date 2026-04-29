@@ -366,7 +366,10 @@ document.addEventListener("DOMContentLoaded", () => {
             if(!targetId) return; 
             pages.forEach(p => p.classList.remove("active"));
             document.getElementById(targetId).classList.add("active");
-            if(targetId === "streaks-page") calculateStreak();
+            if(targetId === "streaks-page") {
+                calculateStreak();
+                calculateGoalDays(); 
+            }
             closeMenu();
         });
     });
@@ -434,7 +437,44 @@ document.addEventListener("DOMContentLoaded", () => {
                 if(day === 180) { emoji = "👑"; text = "Half a year! Unstoppable!"; }
                 if(day === 365) { emoji = "💎"; text = "ONE FULL YEAR!"; }
             }
+    // --- PERFECT DAY CALCULATOR ---
+    function calculateGoalDays() {
+        if (allLogs.length === 0) return;
 
+        // 1. Group all logs by date and sum their macros
+        const groupedLogs = {};
+        allLogs.forEach(log => {
+            const cleanDate = String(log.date).split('T')[0];
+            if (!groupedLogs[cleanDate]) {
+                groupedLogs[cleanDate] = { calories: 0, protein: 0, carbs: 0, fat: 0 };
+            }
+            groupedLogs[cleanDate].calories += Number(log.calories) || 0;
+            groupedLogs[cleanDate].protein += Number(log.protein) || 0;
+            groupedLogs[cleanDate].carbs += Number(log.carbs) || 0;
+            groupedLogs[cleanDate].fat += Number(log.fat) || 0;
+        });
+
+        let perfectDays = 0;
+
+        // 2. Check each day's totals against the current goals
+        for (const date in groupedLogs) {
+            const day = groupedLogs[date];
+            
+            // Round them exactly like the dashboard does so 55.1 fails but 55.0 passes
+            const cal = Math.round(day.calories * 10) / 10;
+            const pro = Math.round(day.protein * 10) / 10;
+            const crb = Math.round(day.carbs * 10) / 10;
+            const fat = Math.round(day.fat * 10) / 10;
+
+            if (cal <= goals.calories && pro <= goals.protein && crb <= goals.carbs && fat <= goals.fat) {
+                perfectDays++;
+            }
+        }
+
+        // 3. Update the UI
+        const countSpan = document.getElementById("goal-met-count");
+        if (countSpan) countSpan.innerText = perfectDays;
+    }
             milestoneDiv.innerHTML = `
                 <div class="milestone-day">${day}d</div>
                 <div class="milestone-text">${text}</div>
