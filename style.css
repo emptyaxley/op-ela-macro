@@ -433,5 +433,5 @@ input {
     justify-content: center;
     align-items: center;
     line-height: 1;
-    padding-bottom: 6px; /* <--- Manually nudges the symbol up */
+    padding-bottom: 4px; /* <--- Manually nudges the symbol up */
 }
