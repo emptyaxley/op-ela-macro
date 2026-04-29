@@ -365,17 +365,22 @@ document.addEventListener("DOMContentLoaded", () => {
             const targetId = e.target.getAttribute("data-target");
             if(!targetId) return; 
             
-            // Hide all pages, show the selected one
+            // 1. Close the menu immediately so the UI is snappy
+            closeMenu(); 
+            
+            // 2. Hide all pages, show the selected one
             pages.forEach(p => p.classList.remove("active"));
             document.getElementById(targetId).classList.add("active");
             
-            // Run the math if they open the Streaks page
+            // 3. Run the math (wrapped in a safety check so it can't crash the page)
             if(targetId === "streaks-page") {
-                calculateStreak();
-                calculateGoalDays(); 
+                try {
+                    calculateStreak();
+                    if (typeof calculateGoalDays === "function") calculateGoalDays(); 
+                } catch (error) {
+                    console.error("Math error on Streaks page:", error);
+                }
             }
-            
-            closeMenu(); // This guarantees the menu slides away!
         });
     });
 
