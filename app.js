@@ -15,7 +15,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // --- MASTER DATA HANDLER ---
     let allLogs = []; 
-    const goals = { protein: 120, carbs: 150, fat: 50 }; // Placeholder goals
+    // Load Goals from local phone storage (or default if blank)
+    let goals = JSON.parse(localStorage.getItem('lizMacroGoals')) || {
+        calories: 2000, protein: 120, carbs: 150, fat: 50
+    };
     const topTenList = document.querySelector(".top-ten-list");
     const inputs = form.querySelectorAll("input");
 
@@ -206,4 +209,151 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Initial load
     fetchAppData();
+// --- SETTINGS LOGIC ---
+    const settingsForm = document.getElementById("settings-form");
+    
+    // Populate the form with current saved goals
+    document.getElementById("goal-calories").value = goals.calories;
+    document.getElementById("goal-protein").value = goals.protein;
+    document.getElementById("goal-carbs").value = goals.carbs;
+    document.getElementById("goal-fat").value = goals.fat;
+
+    settingsForm.addEventListener("submit", (e) => {
+        e.preventDefault();
+        
+        goals = {
+            calories: Number(document.getElementById("goal-calories").value) || 0,
+            protein: Number(document.getElementById("goal-protein").value) || 0,
+            carbs: Number(document.getElementById("goal-carbs").value) || 0,
+            fat: Number(document.getElementById("goal-fat").value) || 0
+        };
+
+        // Save to the phone's browser storage
+        localStorage.setItem('lizMacroGoals', JSON.stringify(goals));
+        
+        const saveBtn = settingsForm.querySelector("button");
+        saveBtn.innerText = "Saved! ✅";
+        saveBtn.style.backgroundColor = "#7FB77E";
+        
+        updateDashboard(); // Instantly update the progress bars
+        
+        setTimeout(() => {
+            saveBtn.innerText = "Save Goals";
+            saveBtn.style.backgroundColor = "var(--accent-peach)";
+        }, 2000);
+    });
+
+    // --- MENU NAVIGATION LOGIC ---
+    const hamburgerBtn = document.querySelector(".hamburger-menu");
+    const sidebar = document.getElementById("sidebar");
+    const overlay = document.getElementById("menu-overlay");
+    const closeBtn = document.getElementById("close-menu");
+    const menuLinks = document.querySelectorAll(".menu-links a");
+    const pages = document.querySelectorAll(".page");
+
+    function closeMenu() {
+        sidebar.classList.remove("open");
+        overlay.classList.remove("active");
+    }
+
+    hamburgerBtn.addEventListener("click", () => {
+        sidebar.classList.add("open");
+        overlay.classList.add("active");
+    });
+
+    closeBtn.addEventListener("click", closeMenu);
+    overlay.addEventListener("click", closeMenu);
+
+    menuLinks.forEach(link => {
+        link.addEventListener("click", (e) => {
+            e.preventDefault();
+            const targetId = e.target.getAttribute("data-target");
+            if(!targetId) return; // Ignores clicks on emojis inside the link
+
+            // Hide all pages, show the selected one
+            pages.forEach(p => p.classList.remove("active"));
+            document.getElementById(targetId).classList.add("active");
+            
+            // Re-calculate streak if they opened the streak page
+            if(targetId === "streaks-page") calculateStreak();
+            
+            closeMenu();
+        });
+    });
+
+    // --- STREAK CALCULATOR ---
+    const milestones = [1, 7, 30, 60, 90, 180, 365];
+
+    function calculateStreak() {
+        if (allLogs.length === 0) return;
+
+        // Get unique dates logged, sorted newest to oldest
+        const uniqueDates = [...new Set(allLogs.map(log => String(log.date).split('T')[0]))].sort().reverse();
+        
+        let currentStreak = 0;
+        const now = new Date();
+        const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+        
+        let yesterday = new Date();
+        yesterday.setDate(yesterday.getDate() - 1);
+        const yesterdayStr = `${yesterday.getFullYear()}-${String(yesterday.getMonth() + 1).padStart(2, '0')}-${String(yesterday.getDate()).padStart(2, '0')}`;
+
+        // The streak is alive if she logged TODAY or YESTERDAY. 
+        let currentDateCheck = new Date(todayStr + "T12:00:00");
+        
+        if (uniqueDates[0] === todayStr) {
+            // Streak includes today
+        } else if (uniqueDates[0] === yesterdayStr) {
+            // Streak is alive, she just hasn't logged today yet
+            currentDateCheck = new Date(yesterdayStr + "T12:00:00");
+        } else {
+            // She missed yesterday. Streak resets.
+            renderStreak(0);
+            return;
+        }
+
+        // Count backward verifying no missed days
+        for (let i = 0; i < uniqueDates.length; i++) {
+            let logDate = new Date(uniqueDates[i] + "T12:00:00");
+            if (logDate.getTime() === currentDateCheck.getTime()) {
+                currentStreak++;
+                currentDateCheck.setDate(currentDateCheck.getDate() - 1); // Walk back one day
+            } else {
+                break; // Gap found!
+            }
+        }
+
+        renderStreak(currentStreak);
+    }
+
+    function renderStreak(streak) {
+        document.getElementById("current-streak-count").innerText = streak;
+        const timeline = document.getElementById("rewards-timeline");
+        timeline.innerHTML = ""; // Clear existing
+
+        milestones.forEach(day => {
+            const isUnlocked = streak >= day;
+            const milestoneDiv = document.createElement("div");
+            milestoneDiv.className = `milestone ${isUnlocked ? 'unlocked' : ''}`;
+            
+            let emoji = "🔒";
+            let text = "Keep going!";
+            if (isUnlocked) {
+                if(day === 1) { emoji = "🎉"; text = "First step!"; }
+                if(day === 7) { emoji = "🥉"; text = "One week down!"; }
+                if(day === 30) { emoji = "🥈"; text = "One month strong!"; }
+                if(day === 60) { emoji = "🌟"; text = "Two months! Amazing!"; }
+                if(day === 90) { emoji = "🥇"; text = "Quarter year of health!"; }
+                if(day === 180) { emoji = "👑"; text = "Half a year! Unstoppable!"; }
+                if(day === 365) { emoji = "💎"; text = "ONE FULL YEAR!"; }
+            }
+
+            milestoneDiv.innerHTML = `
+                <div class="milestone-day">${day}d</div>
+                <div class="milestone-text">${text}</div>
+                <div class="milestone-icon">${emoji}</div>
+            `;
+            timeline.appendChild(milestoneDiv);
+        });
+    }
 });
