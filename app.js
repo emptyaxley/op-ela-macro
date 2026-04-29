@@ -364,13 +364,18 @@ document.addEventListener("DOMContentLoaded", () => {
             e.preventDefault();
             const targetId = e.target.getAttribute("data-target");
             if(!targetId) return; 
+            
+            // Hide all pages, show the selected one
             pages.forEach(p => p.classList.remove("active"));
             document.getElementById(targetId).classList.add("active");
+            
+            // Run the math if they open the Streaks page
             if(targetId === "streaks-page") {
                 calculateStreak();
                 calculateGoalDays(); 
             }
-            closeMenu();
+            
+            closeMenu(); // This guarantees the menu slides away!
         });
     });
 
