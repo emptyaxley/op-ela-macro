@@ -1,5 +1,5 @@
 // The Web App URL you just generated
-const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxufWB6MvSdHIK0KAA2T4MpJHfwmM1mIjIT5GYvzKs-6AOlETourG58eaLVDJ36EH3h/exec";
+const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzny5dfMKrktqj_Mh3KYFkS3IXrf-0QBeR2kChuddbUKseCmQIu8OJCg87GwBdz1crH/exec";
 
 document.addEventListener("DOMContentLoaded", () => {
     
