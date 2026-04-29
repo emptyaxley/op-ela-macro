@@ -9,7 +9,12 @@
 <body>
 
     <header class="app-header">
-        <div id="menu-overlay" class="menu-overlay"></div>
+        <button class="hamburger-menu">☰</button>
+        <h1>Liz's Macros</h1>
+        <div class="header-spacer"></div>
+    </header>
+
+    <div id="menu-overlay" class="menu-overlay"></div>
     <nav id="sidebar" class="sidebar">
         <button id="close-menu" class="close-btn">&times;</button>
         <ul class="menu-links">
@@ -18,12 +23,8 @@
             <li><a href="#" data-target="settings-page">⚙️ Settings</a></li>
         </ul>
     </nav>
-        <button class="hamburger-menu">☰</button>
-        <h1>Liz's Macros</h1>
-        <div class="header-spacer"></div> </header>
 
     <main id="dashboard-page" class="dashboard page active">
-        
         <div class="top-modules">
             
             <section class="floating-module logger-module">
@@ -32,7 +33,8 @@
                     <input type="date" id="log-date" class="date-input">
                     <button class="date-arrow">&gt;</button>
                 </div>
-            <div class="progress-container">
+
+                <div class="progress-container">
                     <div class="macro-bar-group">
                         <div class="macro-label"><span>Protein</span> <span id="protein-text">0 / 120g</span></div>
                         <div class="macro-track"><div class="macro-fill protein-fill" id="protein-bar" style="width: 0%;"></div></div>
@@ -46,11 +48,11 @@
                         <div class="macro-track"><div class="macro-fill fat-fill" id="fat-bar" style="width: 0%;"></div></div>
                     </div>
                 </div>
+
                 <h2>Log a Meal</h2>
                 <form id="macro-form">
                     <input type="text" placeholder="Food Name (Required)" required>
                     <input type="number" placeholder="Servings (Required)" required step="any">
-                    
                     <div class="macro-grid">
                         <input type="number" placeholder="Calories" step="any">
                         <input type="number" placeholder="Protein (g)" step="any">
@@ -65,15 +67,13 @@
             <section class="floating-module top-ten-module">
                 <h2>Top Logged Foods</h2>
                 <ul class="top-ten-list">
-                    <li><span>Grilled Chicken Bowl</span> <button class="add-btn">+</button></li>
-                    <li><span>Greek Yogurt & Berries</span> <button class="add-btn">+</button></li>
-                    <li><span>Protein Shake</span> <button class="add-btn">+</button></li>
-                </ul>
+                    </ul>
             </section>
 
         </div>
     </main>
-    <main id="streaks-page" class="page hidden">
+
+    <main id="streaks-page" class="dashboard page hidden">
         <section class="floating-module text-center">
             <h2>Current Streak</h2>
             <div class="streak-display">
@@ -82,14 +82,14 @@
             </div>
         </section>
 
-        <section class="floating-module rewards-module">
+        <section class="floating-module rewards-module" style="margin-top: 20px;">
             <h2>Unlock Rewards</h2>
             <div class="rewards-timeline" id="rewards-timeline">
                 </div>
         </section>
     </main>
 
-    <main id="settings-page" class="page hidden">
+    <main id="settings-page" class="dashboard page hidden">
         <section class="floating-module settings-module">
             <h2>Daily Goals</h2>
             <form id="settings-form">
@@ -105,10 +105,11 @@
                 <label>Fat (g)</label>
                 <input type="number" id="goal-fat" placeholder="e.g., 50">
                 
-                <button type="submit" class="submit-btn" style="margin-top: 20px;">Save Goals</button>
+                <button type="submit" class="submit-btn" style="margin-top: 20px; width: 100%;">Save Goals</button>
             </form>
         </section>
     </main>
+
     <script src="app.js"></script>
 </body>
 </html>
