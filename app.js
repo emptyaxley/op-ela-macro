@@ -1,6 +1,16 @@
 const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzny5dfMKrktqj_Mh3KYFkS3IXrf-0QBeR2kChuddbUKseCmQIu8OJCg87GwBdz1crH/exec";
 
 document.addEventListener("DOMContentLoaded", () => {
+
+    // --- SECURITY CHECK ---
+    const REQUIRED_KEY = "LizMacrosByMatt2017";
+    const urlParams = new URLSearchParams(window.location.search);
+    
+    if (urlParams.get('key') !== REQUIRED_KEY) {
+        // If the key is missing or wrong, wipe the page completely
+        document.body.innerHTML = "<h2 style='text-align:center; margin-top:50px; color:#aaa; font-family:sans-serif;'>Unauthorized Access</h2>";
+        return; // Stops all other JavaScript from running
+    }
     
     // 1. Set today's date automatically (Locked to Local Time)
     const dateInput = document.getElementById("log-date");
@@ -22,17 +32,23 @@ document.addEventListener("DOMContentLoaded", () => {
     const topTenList = document.querySelector(".top-ten-list");
     const inputs = form.querySelectorAll("input");
 
+    const syncBanner = document.getElementById("sync-banner"); // Grab the new banner
+
     // Fetch everything from the sheet
     async function fetchAppData() {
+        syncBanner.classList.remove("hidden"); // Show global banner
         topTenList.innerHTML = "<li><span style='color: #888;'>Syncing data...</span></li>";
         
         try {
             const response = await fetch(WEB_APP_URL, { method: "GET", redirect: "follow" });
             allLogs = await response.json();
             updateDashboard(); // Run the math
+            syncBanner.classList.add("hidden"); // Hide global banner on success
         } catch (error) {
             console.error("Data sync error:", error);
             topTenList.innerHTML = "<li><span style='color: #ff6b6b;'>Sync failed.</span></li>";
+            syncBanner.innerText = "Sync Failed ❌"; // Alert the user
+            setTimeout(() => syncBanner.classList.add("hidden"), 3000);
         }
     }
 
