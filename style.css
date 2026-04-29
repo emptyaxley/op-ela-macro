@@ -26,7 +26,7 @@ body {
     justify-content: space-between;
     align-items: center;
     background-color: var(--module-bg);
-    padding: 15px 20px;
+    padding: 10px 20px;
     box-shadow: 0 2px 10px rgba(0,0,0,0.05);
     position: sticky;
     top: 0;
@@ -34,7 +34,7 @@ body {
 }
 
 .header-logo {
-    max-height: 40px; /* Keeps the logo cleanly within the sticky header */
+    max-height: 70px; /* Keeps the logo cleanly within the sticky header */
     width: auto;      /* Prevents stretching */
     display: block;
     margin: 0 auto;   /* Centers it between the menu and the spacer */
