@@ -2,10 +2,12 @@ const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzny5dfMKrktqj_Mh3K
 
 document.addEventListener("DOMContentLoaded", () => {
     
-    // 1. Set today's date automatically in the date picker
+    // 1. Set today's date automatically (Locked to Local Time)
     const dateInput = document.getElementById("log-date");
-    const today = new Date().toISOString().split('T')[0];
-    dateInput.value = today;
+    const now = new Date();
+    // Build the YYYY-MM-DD string manually to avoid UTC shifts
+    const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+    dateInput.value = todayStr;
 
     // 2. Grab the form and the submit button
     const form = document.getElementById("macro-form");
@@ -43,7 +45,10 @@ document.addEventListener("DOMContentLoaded", () => {
         
         // Add up macros for the selected date
         allLogs.forEach(log => {
-            if (log.date === selectedDate) {
+            // Force both dates into standard strings before comparing
+            const cleanLogDate = String(log.date).split('T')[0]; 
+            
+            if (cleanLogDate === selectedDate) {
                 totals.protein += Number(log.protein) || 0;
                 totals.carbs += Number(log.carbs) || 0;
                 totals.fat += Number(log.fat) || 0;
@@ -174,20 +179,25 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Left Arrow (-1 Day)
     dateArrows[0].addEventListener("click", () => {
-        let currentDate = new Date(dateInput.value);
+        // Add noon to the string so JavaScript doesn't shift the day backward based on timezone
+        let currentDate = new Date(dateInput.value + "T12:00:00");
         currentDate.setDate(currentDate.getDate() - 1);
-        dateInput.value = currentDate.toISOString().split('T')[0];
+        
+        dateInput.value = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(currentDate.getDate()).padStart(2, '0')}`;
         updateDashboard(); 
     });
 
     // Right Arrow (+1 Day)
     dateArrows[1].addEventListener("click", () => {
-        let currentDate = new Date(dateInput.value);
-        const today = new Date().toISOString().split('T')[0];
-        if (dateInput.value >= today) return; // Prevent future dates
+        let currentDate = new Date(dateInput.value + "T12:00:00");
+        
+        const nowLocal = new Date();
+        const localToday = `${nowLocal.getFullYear()}-${String(nowLocal.getMonth() + 1).padStart(2, '0')}-${String(nowLocal.getDate()).padStart(2, '0')}`;
+        
+        if (dateInput.value >= localToday) return; // Prevent future dates
 
         currentDate.setDate(currentDate.getDate() + 1);
-        dateInput.value = currentDate.toISOString().split('T')[0];
+        dateInput.value = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(currentDate.getDate()).padStart(2, '0')}`;
         updateDashboard(); 
     });
 
