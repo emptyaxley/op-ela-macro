@@ -86,7 +86,7 @@
 
     </main>
 
-    <main id="streaks-page" class="dashboard page">
+    <main id="streaks-page" class="dashboard page hidden">
         <section class="floating-module text-center">
             <h2>Current Streak</h2>
             <div class="streak-display">
@@ -96,9 +96,17 @@
         </section>
 
         <section class="floating-module rewards-module" style="margin-top: 20px;">
-            <h2>Unlock Rewards</h2>
+            <h2>Logging Streaks</h2>
             <div class="rewards-timeline" id="rewards-timeline">
                 </div>
+        </section>
+
+        <section class="floating-module text-center" style="margin-top: 20px;">
+            <h2>Days Goal Met</h2>
+            <div class="streak-display">
+                <span id="goal-met-count" style="color: #A1C4FD;">0</span>
+                <p>Total perfect days!</p>
+            </div>
         </section>
     </main>
 
