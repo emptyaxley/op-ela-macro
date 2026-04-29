@@ -72,4 +72,69 @@ document.addEventListener("DOMContentLoaded", () => {
             }, 3000);
         }
     });
+    // --- TOP 10 LOGIC ---
+    
+    const topTenList = document.querySelector(".top-ten-list");
+    const inputs = form.querySelectorAll("input"); // Grab all inputs again
+
+    // Function to fetch and display the top 10
+    async function loadTop10() {
+        topTenList.innerHTML = "<li><span style='color: #888;'>Loading favorites...</span></li>";
+        
+        try {
+            // Fetch the data from your Apps Script doGet function
+            const response = await fetch(WEB_APP_URL);
+            const data = await response.json();
+            
+            topTenList.innerHTML = ""; // Clear the "Loading" text
+            
+            // If the sheet is empty
+            if (data.length === 0) {
+                topTenList.innerHTML = "<li><span style='color: #888;'>No foods logged yet!</span></li>";
+                return;
+            }
+            
+            // Build the list items
+            data.forEach(food => {
+                const li = document.createElement("li");
+                
+                const span = document.createElement("span");
+                span.innerText = food.name;
+                
+                const btn = document.createElement("button");
+                btn.className = "add-btn";
+                btn.innerText = "+";
+                
+                // When the [+] button is clicked...
+                btn.addEventListener("click", () => {
+                    inputs[0].value = food.name;
+                    inputs[1].value = food.servings;
+                    inputs[2].value = food.calories;
+                    inputs[3].value = food.protein;
+                    inputs[4].value = food.carbs;
+                    inputs[5].value = food.fat;
+                    inputs[6].value = food.sugar;
+                    
+                    // Smooth scroll back to the top of the form (great for mobile)
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                });
+                
+                li.appendChild(span);
+                li.appendChild(btn);
+                topTenList.appendChild(li);
+            });
+            
+        } catch (error) {
+            console.error("Error loading top 10:", error);
+            topTenList.innerHTML = "<li><span style='color: #ff6b6b;'>Error loading list.</span></li>";
+        }
+    }
+
+    // Run the function as soon as the page loads
+    loadTop10();
+    
+    // Optional: Also run it after a new meal is logged so the list updates instantly
+    form.addEventListener("submit", () => {
+        setTimeout(loadTop10, 2500); // Wait a moment for the sheet to update before fetching
+    });
 });
