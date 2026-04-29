@@ -444,9 +444,9 @@ input {
     top: 50%;
     transform: translateY(-50%); /* Perfectly centers it vertically */
     font-size: 11px;
-    color: #777;          /* Sleek, cool grey */
-    font-weight: 600;
+    color: #999;          /* Sleek, cool grey */
+    font-weight: 350;
     z-index: 2;           /* Forces it to sit above the colored fill bar */
     pointer-events: none; /* Prevents it from interfering with any taps */
-    text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.6); /* Subtle glow for contrast */
+    text-shadow: 0px 0px 0px rgba(255, 255, 255, 0.0); /* Subtle glow for contrast */
 }
