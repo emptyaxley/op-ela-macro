@@ -22,6 +22,35 @@ document.addEventListener("DOMContentLoaded", () => {
     const submitBtn = form.querySelector(".submit-btn");
     const topTenList = document.querySelector(".top-ten-list");
     const inputs = form.querySelectorAll("input");
+    // --- SERVINGS MULTIPLIER LOGIC ---
+    const servingsInput = inputs[1];
+    const macroInputs = [inputs[2], inputs[3], inputs[4], inputs[5], inputs[6]];
+
+    // 1. Save the baseline value when she clicks into the field
+    servingsInput.addEventListener("focus", function() {
+        this.dataset.oldValue = this.value;
+    });
+
+    // 2. Run the math when she finishes typing and clicks away (or hits Enter)
+    servingsInput.addEventListener("change", function() {
+        const oldVal = parseFloat(this.dataset.oldValue);
+        const newVal = parseFloat(this.value);
+
+        // Only run math if both numbers are valid, greater than 0, and actually changed
+        if (!isNaN(oldVal) && oldVal > 0 && !isNaN(newVal) && newVal > 0 && oldVal !== newVal) {
+            const ratio = newVal / oldVal;
+            
+            macroInputs.forEach(input => {
+                const currentMacro = parseFloat(input.value);
+                if (!isNaN(currentMacro)) {
+                    // Multiply and round to 1 decimal place to keep the UI clean
+                    input.value = Math.round((currentMacro * ratio) * 10) / 10;
+                }
+            });
+        }
+        // Update the baseline for the next change
+        this.dataset.oldValue = this.value;
+    });
     const syncBanner = document.getElementById("sync-banner");
 
     // --- MASTER DATA HANDLER ---
@@ -144,6 +173,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 inputs[2].value = food.calories; inputs[3].value = food.protein;
                 inputs[4].value = food.carbs; inputs[5].value = food.fat;
                 inputs[6].value = food.sugar;
+                inputs[1].dataset.oldValue = food.servings; 
+                
                 window.scrollTo({ top: 0, behavior: 'smooth' });
             });
             
@@ -197,6 +228,8 @@ document.addEventListener("DOMContentLoaded", () => {
                     inputs[2].value = log.calories; inputs[3].value = log.protein;
                     inputs[4].value = log.carbs; inputs[5].value = log.fat;
                     inputs[6].value = log.sugar;
+                    inputs[1].dataset.oldValue = log.servings;
+                    
                     window.scrollTo({ top: 0, behavior: 'smooth' });
                 });
 
