@@ -148,14 +148,18 @@ input {
     padding: 12px;
     border: 1px solid #e0e0e0;
     border-radius: 8px;
-    font-size: 14px;
+    font-size: 16px;
     background-color: #fafafa;
+    box-sizing: border-box;     /* Forces borders and padding to stay inside the box width */
+    width: 100%;                /* Ensures inputs don't stretch past their container */
 }
 
 .macro-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
+    /* This tells the grid to squeeze them evenly, but wrap to a new line if it gets too tight on a small phone */
+    grid-template-columns: repeat(auto-fit, minmax(50px, 1fr)); 
+    gap: 8px;
+    width: 100%;
 }
 
 .submit-btn {
